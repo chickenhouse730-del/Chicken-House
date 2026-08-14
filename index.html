@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffb000">
 <title>بيت الفروج | Chicken House</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#fff8ef;color:#222}
@@ -100,6 +102,11 @@ function sendOrder(){
  location.href="https://wa.me/"+WA+"?text="+encodeURIComponent(msg);
 }
 render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+}
 </script>
 </body>
 </html>
