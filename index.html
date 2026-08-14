@@ -20,7 +20,7 @@ header{background:#191919;color:#fff;padding:22px 16px;text-align:center;positio
 .name{font-weight:800;font-size:18px}.price{color:#b84a00;font-weight:900;white-space:nowrap}.add{background:#ffb000;color:#111}
 .cart{background:#171717;color:#fff;border-radius:20px;padding:20px;margin-top:25px}.cart h2{margin-top:0}.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #444}
 .total{font-size:22px;font-weight:900;margin:14px 0}.checkout{background:#20c76b;color:#fff;width:100%;font-size:18px}
-input,textarea{width:100%;padding:13px;border:1px solid #ddd;border-radius:12px;margin:6px 0;font-size:16px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #ddd;border-radius:12px;margin:6px 0;font-size:16px}.delivery{background:#fff;border-radius:18px;padding:16px;margin-top:15px;color:#222}.delivery h3{margin:0 0 8px}.delivery-note{font-size:13px;opacity:.75;margin-top:4px}
 .small{font-size:13px;opacity:.75}.empty{opacity:.7}
 </style>
 </head>
@@ -45,6 +45,15 @@ input,textarea{width:100%;padding:13px;border:1px solid #ddd;border-radius:12px;
 <input id="customer" placeholder="الاسم">
 <input id="phone" placeholder="رقم الهاتف">
 <textarea id="address" rows="3" placeholder="العنوان / ملاحظات التوصيل"></textarea>
+<div class="delivery">
+  <h3 id="deliveryTitle">🚚 أجور التوصيل</h3>
+  <select id="deliveryZone" onchange="updateCart()">
+    <option value="bosna">ضمن البوسنا — 65 ليرة</option>
+    <option value="outside">بعد البوسنا — 18 ليرة لكل كم</option>
+  </select>
+  <input id="deliveryKm" type="number" min="1" step="1" value="1" style="display:none" oninput="updateCart()" placeholder="عدد الكيلومترات بعد البوسنا">
+  <div class="delivery-note" id="deliveryNote">ضمن البوسنا: 65 ليرة.</div>
+</div>
 <button class="checkout" onclick="sendOrder()">إرسال الطلب عبر واتساب</button>
 <p class="small">سيتم فتح واتساب برسالة جاهزة تحتوي تفاصيل طلبك.</p>
 </section>
@@ -80,25 +89,52 @@ function render(){
  `<div class="section">🔥 ${labels[0]}</div>`+
  products.map((p,i)=>`<div class="card"><div><div class="name">${p[0]} ${lang==="ar"?p[1]:p[2]}</div><div class="price">${p[3]} ليرة</div></div><button class="add" onclick="add(${i})">${lang==="ar"?"أضف للطلب":lang==="tr"?"Ekle":"Add to order"}</button></div>`).join("");
  document.getElementById("cartTitle").textContent=lang==="ar"?"🛒 طلبك":lang==="tr"?"🛒 Siparişiniz":"🛒 Your order";
+ document.getElementById("deliveryTitle").textContent=lang==="ar"?"🚚 أجور التوصيل":lang==="tr"?"🚚 Teslimat ücreti":"🚚 Delivery fee";
+ const z=document.getElementById("deliveryZone"); z.options[0].textContent=lang==="ar"?"ضمن البوسنا — 65 ليرة":lang==="tr"?"Bosna içinde — 65 TL":"Inside Bosna — 65 TL"; z.options[1].textContent=lang==="ar"?"بعد البوسنا — 18 ليرة لكل كم":lang==="tr"?"Bosna dışı — km başına 18 TL":"Outside Bosna — 18 TL per km"; document.getElementById("deliveryKm").placeholder=lang==="ar"?"عدد الكيلومترات بعد البوسنا":lang==="tr"?"Bosna dışı kilometre sayısı":"Kilometers outside Bosna";
  updateCart();
 }
 function add(i){cart.push(i);updateCart();}
+function getDeliveryFee(){
+ const zone=document.getElementById("deliveryZone")?.value||"bosna";
+ const km=Math.max(1,Number(document.getElementById("deliveryKm")?.value||1));
+ return zone==="bosna"?65:km*18;
+}
+function updateDeliveryUI(){
+ const zone=document.getElementById("deliveryZone");
+ if(!zone)return;
+ const outside=zone.value==="outside";
+ document.getElementById("deliveryKm").style.display=outside?"block":"none";
+ document.getElementById("deliveryNote").textContent=outside
+   ? (lang==="ar"?"بعد البوسنا: 18 ليرة لكل كيلومتر.":lang==="tr"?"Bosna dışı: kilometre başına 18 TL.":"Outside Bosna: 18 TL per kilometer.")
+   : (lang==="ar"?"ضمن البوسنا: 65 ليرة.":lang==="tr"?"Bosna içinde: 65 TL.":"Inside Bosna: 65 TL.");
+}
 function updateCart(){
+ updateDeliveryUI();
  let box=document.getElementById("cartItems");
- if(!cart.length){box.className="empty";box.textContent=lang==="ar"?"لم تضف أي صنف بعد.":lang==="tr"?"Henüz ürün eklemediniz.":"No items added yet.";document.getElementById("total").textContent=(lang==="ar"?"المجموع: ":lang==="tr"?"Toplam: ":"Total: ")+"0 ليرة";return;}
+ let delivery=getDeliveryFee();
+ if(!cart.length){box.className="empty";box.textContent=lang==="ar"?"لم تضف أي صنف بعد.":lang==="tr"?"Henüz ürün eklemediniz.":"No items added yet.";document.getElementById("total").textContent=(lang==="ar"?"المجموع: ":lang==="tr"?"Toplam: ":"Total: ")+delivery+" ليرة";return;}
  box.className="";
  let total=0;
  box.innerHTML=cart.map((i,n)=>{total+=products[i][3];return `<div class="row"><span>${products[i][0]} ${lang==="ar"?products[i][1]:products[i][2]}</span><span>${products[i][3]} ₺ <button onclick="cart.splice(${n},1);updateCart()">✕</button></span></div>`}).join("");
- document.getElementById("total").textContent=(lang==="ar"?"المجموع: ":lang==="tr"?"Toplam: ":"Total: ")+total+" ليرة";
+ box.innerHTML += `<div class="row"><span>${lang==="ar"?"🚚 التوصيل":lang==="tr"?"🚚 Teslimat":"🚚 Delivery"}</span><span>${delivery} ₺</span></div>`;
+ document.getElementById("total").textContent=(lang==="ar"?"المجموع مع التوصيل: ":lang==="tr"?"Teslimat dahil toplam: ":"Total incl. delivery: ")+(total+delivery)+" ليرة";
 }
 function sendOrder(){
  if(!cart.length){alert(lang==="ar"?"أضف صنفاً أولاً":lang==="tr"?"Önce ürün ekleyin":"Please add an item first");return;}
  const name=document.getElementById("customer").value.trim(),phone=document.getElementById("phone").value.trim(),address=document.getElementById("address").value.trim();
+ const zone=document.getElementById("deliveryZone").value;
+ const km=Math.max(1,Number(document.getElementById("deliveryKm").value||1));
+ const delivery=zone==="bosna"?65:km*18;
  let total=0, counts={};
  cart.forEach(i=>{total+=products[i][3];counts[i]=(counts[i]||0)+1});
+ let grand=total+delivery;
  let lines=Object.entries(counts).map(([i,q])=>`${q}x ${products[i][lang==="ar"?1:2]} - ${products[i][3]*q} ₺`).join("\n");
+ let deliveryText=zone==="bosna"
+   ? (lang==="ar"?"ضمن البوسنا":lang==="tr"?"Bosna içi":"Inside Bosna")
+   : (lang==="ar"?`بعد البوسنا (${km} كم)`:lang==="tr"?`Bosna dışı (${km} km)`:`Outside Bosna (${km} km)`);
  let msg=(lang==="ar"?"🍗 طلب جديد - بيت الفروج\n\n":lang==="tr"?"🍗 Yeni Sipariş - Chicken House\n\n":"🍗 New Order - Chicken House\n\n")+lines+
- `\n\n${lang==="ar"?"المجموع":lang==="tr"?"Toplam":"Total"}: ${total} ₺\n${lang==="ar"?"الاسم":lang==="tr"?"Ad":"Name"}: ${name}\n${lang==="ar"?"الهاتف":lang==="tr"?"Telefon":"Phone"}: ${phone}\n${lang==="ar"?"العنوان / الملاحظات":lang==="tr"?"Adres / Not":"Address / Notes"}: ${address}`;
+ `\n\n${lang==="ar"?"أجور التوصيل":lang==="tr"?"Teslimat ücreti":"Delivery fee"}: ${delivery} ₺ (${deliveryText})`+
+ `\n${lang==="ar"?"المجموع مع التوصيل":lang==="tr"?"Teslimat dahil toplam":"Total incl. delivery"}: ${grand} ₺\n${lang==="ar"?"الاسم":lang==="tr"?"Ad":"Name"}: ${name}\n${lang==="ar"?"الهاتف":lang==="tr"?"Telefon":"Phone"}: ${phone}\n${lang==="ar"?"العنوان / الملاحظات":lang==="tr"?"Adres / Not":"Address / Notes"}: ${address}`;
  location.href="https://wa.me/"+WA+"?text="+encodeURIComponent(msg);
 }
 render();
