@@ -14,7 +14,7 @@ header{background:#191919;color:#fff;padding:22px 16px;text-align:center;positio
 .hero{background:linear-gradient(135deg,#201b16,#8c3d10);color:#fff;border-radius:22px;padding:28px;margin-bottom:20px}
 .hero h1{margin:0 0 8px;font-size:34px}.hero p{margin:0}
 .lang{margin-top:14px;display:flex;gap:8px}.lang button,.add,.checkout{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:pointer}
-.lang button{background:#fff;color:#222}.lang button.active{background:#ffb000}
+.lang button{background:#fff;color:#222}.lang button.active{background:#ffb000}.location-btn{display:inline-block;margin-top:12px;background:#20c76b;color:#fff;text-decoration:none;border-radius:12px;padding:11px 16px;font-weight:800}
 .section{margin:25px 0 12px;font-size:24px;font-weight:900}
 .card{background:#fff;border-radius:18px;padding:16px;margin:10px 0;display:flex;justify-content:space-between;gap:15px;align-items:center;box-shadow:0 4px 16px #00000012}
 .name{font-weight:800;font-size:18px}.price{color:#b84a00;font-weight:900;white-space:nowrap}.add{background:#ffb000;color:#111}
@@ -34,6 +34,7 @@ input,textarea,select{width:100%;padding:13px;border:1px solid #ddd;border-radiu
   <h1>أشهى الفروج والمشاوي يومياً 🔥</h1>
   <p>اطلب أونلاين وسيتم إرسال طلبك مباشرة عبر واتساب.</p>
   <div class="lang"><button class="active" onclick="setLang('ar')">العربية</button><button onclick="setLang('tr')">Türkçe</button><button onclick="setLang('en')">English</button></div>
+  <a id="locationBtn" class="location-btn" href="https://maps.app.goo.gl/JR1Dmr4BnWKt4xw19" target="_blank" rel="noopener">📍 موقعنا على الخريطة</a>
 </section>
 
 <div id="menu"></div>
@@ -90,6 +91,7 @@ function render(){
  products.map((p,i)=>`<div class="card"><div><div class="name">${p[0]} ${lang==="ar"?p[1]:p[2]}</div><div class="price">${p[3]} ليرة</div></div><button class="add" onclick="add(${i})">${lang==="ar"?"أضف للطلب":lang==="tr"?"Ekle":"Add to order"}</button></div>`).join("");
  document.getElementById("cartTitle").textContent=lang==="ar"?"🛒 طلبك":lang==="tr"?"🛒 Siparişiniz":"🛒 Your order";
  document.getElementById("deliveryTitle").textContent=lang==="ar"?"🚚 أجور التوصيل":lang==="tr"?"🚚 Teslimat ücreti":"🚚 Delivery fee";
+ const lb=document.getElementById("locationBtn"); lb.textContent=lang==="ar"?"📍 موقعنا على الخريطة":lang==="tr"?"📍 Haritadaki konumumuz":"📍 Our location on the map";
  const z=document.getElementById("deliveryZone"); z.options[0].textContent=lang==="ar"?"ضمن البوسنا — 65 ليرة":lang==="tr"?"Bosna içinde — 65 TL":"Inside Bosna — 65 TL"; z.options[1].textContent=lang==="ar"?"بعد البوسنا — 18 ليرة لكل كم":lang==="tr"?"Bosna dışı — km başına 18 TL":"Outside Bosna — 18 TL per km"; document.getElementById("deliveryKm").placeholder=lang==="ar"?"عدد الكيلومترات بعد البوسنا":lang==="tr"?"Bosna dışı kilometre sayısı":"Kilometers outside Bosna";
  updateCart();
 }
